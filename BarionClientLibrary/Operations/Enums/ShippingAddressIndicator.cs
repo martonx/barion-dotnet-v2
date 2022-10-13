@@ -1,13 +1,12 @@
-﻿namespace BarionClientLibrary.Operations.Common
+﻿namespace BarionClientLibrary.Operations.Enums;
+
+public enum ShippingAddressIndicator
 {
-    public enum ShippingAddressIndicator
-    {
-        ShipToCardholdersBillingAddress = 0,
-        ShipToAnotherVerifiedAddress = 10,
-        ShipToDifferentAddress = 20,
-        ShipToStore = 30,
-        DigitalGoods = 40,
-        TravelAndEventTickets = 50,
-        Other = 60
-    }
+    ShipToCardholdersBillingAddress = 0,
+    ShipToAnotherVerifiedAddress = 10,
+    ShipToDifferentAddress = 20,
+    ShipToStore = 30,
+    DigitalGoods = 40,
+    TravelAndEventTickets = 50,
+    Other = 60
 }

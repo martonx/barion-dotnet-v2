@@ -1,9 +1,8 @@
-﻿namespace BarionClientLibrary.Operations.Common
+﻿namespace BarionClientLibrary.Operations.Enums;
+
+public enum ChallengePreference
 {
-    public enum ChallengePreference
-    {
-        NoPreference = 0,
-        ChallengeRequired = 10,
-        NoChallengeNeeded = 20
-    }
+    NoPreference = 0,
+    ChallengeRequired = 10,
+    NoChallengeNeeded = 20
 }

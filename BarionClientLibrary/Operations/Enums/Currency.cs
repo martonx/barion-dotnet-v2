@@ -1,10 +1,9 @@
-﻿namespace BarionClientLibrary.Operations.Common
+﻿namespace BarionClientLibrary.Operations.Enums;
+
+public enum Currency
 {
-    public enum Currency
-    {
-        HUF,
-        EUR,
-        USD,
-        CZK
-    }
+    HUF,
+    EUR,
+    USD,
+    CZK
 }

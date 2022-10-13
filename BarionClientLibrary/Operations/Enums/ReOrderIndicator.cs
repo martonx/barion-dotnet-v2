@@ -1,8 +1,7 @@
-﻿namespace BarionClientLibrary.Operations.Common
+﻿namespace BarionClientLibrary.Operations.Enums;
+
+public enum ReOrderIndicator
 {
-    public enum ReOrderIndicator
-    {
-        FirstTimeOrdered = 0,
-        Reordered = 10
-    }
+    FirstTimeOrdered = 0,
+    Reordered = 10
 }

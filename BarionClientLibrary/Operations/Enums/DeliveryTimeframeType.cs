@@ -1,10 +1,9 @@
-﻿namespace BarionClientLibrary.Operations.Common
+﻿namespace BarionClientLibrary.Operations.Enums;
+
+public enum DeliveryTimeframeType
 {
-    public enum DeliveryTimeframeType
-    {
-        ElectronicDelivery = 0,
-        SameDayShipping = 10,
-        OvernightShipping = 20,
-        TwoDayOrMoreShipping = 30
-    }
+    ElectronicDelivery = 0,
+    SameDayShipping = 10,
+    OvernightShipping = 20,
+    TwoDayOrMoreShipping = 30
 }

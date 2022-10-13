@@ -1,8 +1,7 @@
-﻿namespace BarionClientLibrary.Operations.Common
+﻿namespace BarionClientLibrary.Operations.Enums;
+
+public enum SuspiciousActivityIndicator
 {
-    public enum SuspiciousActivityIndicator
-    {
-        NoSuspiciousActivityObserved = 0,
-        SuspiciousActivityObserved = 10
-    }
+    NoSuspiciousActivityObserved = 0,
+    SuspiciousActivityObserved = 10
 }

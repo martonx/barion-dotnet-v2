@@ -1,279 +1,272 @@
-﻿using System;
-using System.Net.Http;
-using BarionClientLibrary.Operations.StartPayment;
-using System.Threading.Tasks;
-using System.Net;
-using System.Globalization;
-using Newtonsoft.Json;
-using Xunit;
-using System.Threading;
+﻿namespace BarionClientLibrary.Tests;
 
-namespace BarionClientLibrary.Tests
+public class BarionClientTests
 {
-    public class BarionClientTests
+    private readonly BarionClient _barionClient;
+    private readonly HttpClient _httpClient;
+    private readonly TestHttpMessageHandler _httpMessageHandler;
+    private BarionSettings _barionClientSettings;
+    private readonly TestRetryPolicy _retryPolicy;
+
+    public BarionClientTests()
     {
-        private readonly BarionClient _barionClient;
-        private readonly HttpClient _httpClient;
-        private readonly TestHttpMessageHandler _httpMessageHandler;
-        private BarionSettings _barionClientSettings;
-        private readonly TestRetryPolicy _retryPolicy;
+        _httpMessageHandler = new TestHttpMessageHandler();
+        _httpClient = new HttpClient(_httpMessageHandler);
+        _retryPolicy = new TestRetryPolicy();
 
-        public BarionClientTests()
+        _barionClientSettings = new BarionSettings
         {
-            _httpMessageHandler = new TestHttpMessageHandler();
-            _httpClient = new HttpClient(_httpMessageHandler);
-            _retryPolicy = new TestRetryPolicy();
+            BaseUrl = new Uri("https://api.barion.com"),
+            POSKey = Guid.NewGuid()
+        };
+        _barionClient = new BarionClient(_barionClientSettings, _httpClient)
+        {
+            RetryPolicy = _retryPolicy
+        };
+    }
 
-            _barionClientSettings = new BarionSettings
-            {
-                BaseUrl = new Uri("https://api.barion.com"),
-                POSKey = Guid.NewGuid()
+    [Fact]
+    public async Task ExecuteAsync_ShouldSendHttpRequest()
+    {
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+
+        var result = await _barionClient.ExecuteAsync(new StartPaymentOperation());
+
+        Assert.Equal(1, _httpMessageHandler.SendAsyncCallCount);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldRetrySending_IfPolicyIndicates()
+    {
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+        _httpMessageHandler.HttpResponseMessage.StatusCode = HttpStatusCode.RequestTimeout;
+
+        _retryPolicy.ShouldRetryMock =
+            (retryCount, statusCode) => {
+                if (retryCount < 3)
+                    return true;
+                
+                return false;
             };
-            _barionClient = new BarionClient(_barionClientSettings, _httpClient)
-            {
-                RetryPolicy = _retryPolicy
+
+        var result = await _barionClient.ExecuteAsync(new StartPaymentOperation());
+
+        Assert.Equal(4, _httpMessageHandler.SendAsyncCallCount);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldNotRetrySending_IfCancellationRequested()
+    {
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+        _httpMessageHandler.HttpResponseMessage.StatusCode = HttpStatusCode.RequestTimeout;
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+        
+        _retryPolicy.ShouldRetryMock =
+            (retryCount, statusCode) => {
+                if (retryCount < 3)
+                    return true;
+
+                return false;
             };
-        }
 
-        [Fact]
-        public async Task ExecuteAsync_ShouldSendHttpRequest()
-        {
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+        var resultException = await Assert.ThrowsAsync<TaskCanceledException>(() =>
+            _barionClient.ExecuteAsync(new StartPaymentOperation(), cts.Token));
 
-            var result = await _barionClient.ExecuteAsync(new StartPaymentOperation());
+        Assert.Equal("A task was canceled.", resultException.Message);
 
-            Assert.Equal(1, _httpMessageHandler.SendAsyncCallCount);
-        }
+        Assert.Equal(1, _httpMessageHandler.SendAsyncCallCount);
+    }
 
-        [Fact]
-        public async Task ExecuteAsync_ShouldRetrySending_IfPolicyIndicates()
-        {
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
-            _httpMessageHandler.HttpResponseMessage.StatusCode = HttpStatusCode.RequestTimeout;
+    [Fact]
+    public async Task ExecuteAsync_ShouldNotRetrySending_IfTimeoutReached()
+    {
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+        _httpMessageHandler.HttpResponseMessage.StatusCode = HttpStatusCode.RequestTimeout;
+        _retryPolicy.RetryInterval = TimeSpan.FromMilliseconds(75);
+        _retryPolicy.ShouldRetryMock =
+            (retryCount, statusCode) => {
+                if (retryCount < 3)
+                    return true;
 
-            _retryPolicy.ShouldRetryMock =
-                (retryCount, statusCode) => {
-                    if (retryCount < 3)
-                        return true;
-                    
-                    return false;
-                };
-
-            var result = await _barionClient.ExecuteAsync(new StartPaymentOperation());
-
-            Assert.Equal(4, _httpMessageHandler.SendAsyncCallCount);
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_ShouldNotRetrySending_IfCancellationRequested()
-        {
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
-            _httpMessageHandler.HttpResponseMessage.StatusCode = HttpStatusCode.RequestTimeout;
-            var cts = new CancellationTokenSource();
-            cts.Cancel();
-            
-            _retryPolicy.ShouldRetryMock =
-                (retryCount, statusCode) => {
-                    if (retryCount < 3)
-                        return true;
-
-                    return false;
-                };
-
-            var result = await _barionClient.ExecuteAsync(new StartPaymentOperation(), cts.Token);
-
-            Assert.Equal(1, _httpMessageHandler.SendAsyncCallCount);
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_ShouldNotRetrySending_IfTimeoutReached()
-        {
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
-            _httpMessageHandler.HttpResponseMessage.StatusCode = HttpStatusCode.RequestTimeout;
-            _retryPolicy.RetryInterval = TimeSpan.FromMilliseconds(75);
-            _retryPolicy.ShouldRetryMock =
-                (retryCount, statusCode) => {
-                    if (retryCount < 3)
-                        return true;
-
-                    return false;
-                };
-
-            _barionClient.Timeout = TimeSpan.FromMilliseconds(50);
-            var result = await _barionClient.ExecuteAsync(new StartPaymentOperation());
-
-            Assert.Equal(1, _httpMessageHandler.SendAsyncCallCount);
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_ShouldRetrySending_IfPolicyIndicates_AfterAnException()
-        {
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
-            _httpMessageHandler.SendAsyncException = new Exception();
-            
-            _retryPolicy.ShouldRetryExceptionMock =
-                (retryCount, exception) => {
-                    if (retryCount < 3)
-                        return true;
-
-                    return false;
-                };
-
-            await Assert.ThrowsAsync<Exception>(async () => await _barionClient.ExecuteAsync(new StartPaymentOperation()));
-
-            Assert.Equal(4, _httpMessageHandler.SendAsyncCallCount);
-        }
-
-        public static object[][] GetHttpMethods = { new [] { HttpMethod.Post }, new [] { HttpMethod.Put } };
-
-        [Theory]
-        [MemberData(nameof(GetHttpMethods))]
-        public async Task ExecuteAsync_ShouldSetValidPOSKey(HttpMethod httpMethod)
-        {
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
-            var operation = PrepareValidOperation();
-            operation.MethodReturns = httpMethod;
-
-            var result = await _barionClient.ExecuteAsync(operation);
-
-            Assert.Equal($"{{\r\n  \"POSKey\": \"{_barionClientSettings.POSKey}\"\r\n}}", _httpMessageHandler.HttpRequestBody);
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_ShouldSetContentTypeTo_Json()
-        {
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
-            var operation = PrepareValidOperation();
-            operation.MethodReturns = HttpMethod.Put;
-
-            var result = await _barionClient.ExecuteAsync(operation);
-
-            Assert.Equal("application/json", _httpMessageHandler.HttpRequestMessage.Content.Headers.ContentType.MediaType);
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_ShouldSetEncodingTo_UTF8()
-        {
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
-            var operation = PrepareValidOperation();
-            operation.MethodReturns = HttpMethod.Post;
-
-            var result = await _barionClient.ExecuteAsync(operation);
-
-            Assert.Equal("utf-8", _httpMessageHandler.HttpRequestMessage.Content.Headers.ContentType.CharSet);
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_ShouldSerializeEnumsTo_String()
-        {
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
-            var operation = new TestOperationWithEnum {
-                Color = ConsoleColor.Red
+                return false;
             };
-            PrepareValidOperation(operation);
 
-            operation.MethodReturns = HttpMethod.Post;
+        _barionClient.Timeout = TimeSpan.FromMilliseconds(50);
+        var result = await _barionClient.ExecuteAsync(new StartPaymentOperation());
 
-            var result = await _barionClient.ExecuteAsync(operation);
+        Assert.Equal(1, _httpMessageHandler.SendAsyncCallCount);
+    }
 
-            Assert.Contains("\"Color\": \"Red\"", _httpMessageHandler.HttpRequestBody);
-        }
+    [Fact]
+    public async Task ExecuteAsync_ShouldRetrySending_IfPolicyIndicates_AfterAnException()
+    {
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+        _httpMessageHandler.SendAsyncException = new Exception();
+        
+        _retryPolicy.ShouldRetryExceptionMock =
+            (retryCount, exception) => {
+                if (retryCount < 3)
+                    return true;
 
-        [Fact]
-        public async Task ExecuteAsync_ShouldNotSetBody_OnGetRequests()
-        {
-            var operation = PrepareValidOperation();
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+                return false;
+            };
 
-            operation.MethodReturns = HttpMethod.Get;
+        await Assert.ThrowsAsync<Exception>(async () => await _barionClient.ExecuteAsync(new StartPaymentOperation()));
 
-            var result = await _barionClient.ExecuteAsync(operation);
+        Assert.Equal(4, _httpMessageHandler.SendAsyncCallCount);
+    }
 
-            Assert.Null(_httpMessageHandler.HttpRequestBody);
-        }
+    public static object[][] GetHttpMethods = { new [] { HttpMethod.Post }, new [] { HttpMethod.Put } };
 
-        [Fact]
-        public async Task ExecuteAsync_ShouldSetValidUri()
-        {
-            var operation = PrepareValidOperation();
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+    [Theory]
+    [MemberData(nameof(GetHttpMethods))]
+    public async Task ExecuteAsync_ShouldSetValidPOSKey(HttpMethod httpMethod)
+    {
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+        var operation = PrepareValidOperation();
+        operation.MethodReturns = httpMethod;
 
-            _barionClientSettings.BaseUrl = new Uri("https://api.barion.com/");
-            operation.RelativeUriReturns = new Uri("/payment/start", UriKind.Relative);
+        var result = await _barionClient.ExecuteAsync(operation);
 
-            var result = await _barionClient.ExecuteAsync(operation);
+        Assert.Equal($"{{\r\n  \"POSKey\": \"{_barionClientSettings.POSKey}\"\r\n}}", _httpMessageHandler.HttpRequestBody);
+    }
 
-            Assert.Equal("https://api.barion.com/payment/start", _httpMessageHandler.HttpRequestMessage.RequestUri.ToString());
-        }
+    [Fact]
+    public async Task ExecuteAsync_ShouldSetContentTypeTo_Json()
+    {
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+        var operation = PrepareValidOperation();
+        operation.MethodReturns = HttpMethod.Put;
 
-        [Fact]
-        public async Task ExecuteAsync_ShouldSetOperationSuccessTrue_OnSuccessStatusCode()
-        {
-            var operation = PrepareValidOperation();
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+        var result = await _barionClient.ExecuteAsync(operation);
 
-            var result = await _barionClient.ExecuteAsync(operation);
+        Assert.Equal("application/json", _httpMessageHandler.HttpRequestMessage.Content.Headers.ContentType.MediaType);
+    }
 
-            Assert.True(result.IsOperationSuccessful, "Operation should have been successful.");
-        }
+    [Fact]
+    public async Task ExecuteAsync_ShouldSetEncodingTo_UTF8()
+    {
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+        var operation = PrepareValidOperation();
+        operation.MethodReturns = HttpMethod.Post;
 
-        [Fact]
-        public async Task ExecuteAsync_ShouldNotReturnNull_EvenIfErrorOccured()
-        {
-            var operation = PrepareValidOperation();
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
-            _httpMessageHandler.HttpResponseMessage.StatusCode = HttpStatusCode.InternalServerError;
+        var result = await _barionClient.ExecuteAsync(operation);
 
-            var result = await _barionClient.ExecuteAsync<TestOperationResult>(operation);
+        Assert.Equal("utf-8", _httpMessageHandler.HttpRequestMessage.Content.Headers.ContentType.CharSet);
+    }
 
-            Assert.NotNull(result);
-        }
+    [Fact]
+    public async Task ExecuteAsync_ShouldSerializeEnumsTo_String()
+    {
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+        var operation = new TestOperationWithEnum {
+            Color = ConsoleColor.Red
+        };
+        PrepareValidOperation(operation);
 
-        [Fact]
-        public async Task ExecuteAsync_ShouldSetOperationSuccessFalse_OnErrorStatusCode()
-        {
-            var operation = PrepareValidOperation();
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
-            _httpMessageHandler.HttpResponseMessage.StatusCode = HttpStatusCode.BadRequest;
+        operation.MethodReturns = HttpMethod.Post;
 
-            var result = await _barionClient.ExecuteAsync(operation);
+        var result = await _barionClient.ExecuteAsync(operation);
 
-            Assert.False(result.IsOperationSuccessful, "Operation should not have been successful.");
-            Assert.Equal("BadRequest", result.Errors[0].ErrorCode);
-            Assert.Equal("Bad Request", result.Errors[0].Title);
-        }
+        Assert.Contains("\"Color\": \"Red\"", _httpMessageHandler.HttpRequestBody);
+    }
 
-        [Fact]
-        public async Task ExecuteAsync_ShouldSetOperationSuccessFalse_OnErrorStatusCode_EvenIfTheErrorsArrayIsEmpty()
-        {
-            var operation = PrepareValidOperation();
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
-            _httpMessageHandler.HttpResponseMessage.StatusCode = HttpStatusCode.BadRequest;
-            _httpMessageHandler.HttpResponseMessage.Content = new StringContent("{\"Errors\":[]}");
+    [Fact]
+    public async Task ExecuteAsync_ShouldNotSetBody_OnGetRequests()
+    {
+        var operation = PrepareValidOperation();
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
 
-            var result = await _barionClient.ExecuteAsync(operation);
+        operation.MethodReturns = HttpMethod.Get;
 
-            Assert.False(result.IsOperationSuccessful, "Operation should not have been successful.");
-        }
+        var result = await _barionClient.ExecuteAsync(operation);
 
-        [Fact]
-        public async Task ExecuteAsync_ShouldSetOperationSuccessFalse_OnErrorsArrayIsNotEmpty()
-        {
-            var operation = PrepareValidOperation();
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
-            _httpMessageHandler.HttpResponseMessage.Content = new StringContent("{\"Errors\":[{\"ErrorCode\":\"1\", \"Title\":\"Error title\", \"Description\": \"Error\"}]}");
+        Assert.Null(_httpMessageHandler.HttpRequestBody);
+    }
 
-            var result = await _barionClient.ExecuteAsync(operation);
+    [Fact]
+    public async Task ExecuteAsync_ShouldSetValidUri()
+    {
+        var operation = PrepareValidOperation();
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
 
-            Assert.False(result.IsOperationSuccessful, "Operation should not have been successful.");
-        }
+        _barionClientSettings.BaseUrl = new Uri("https://api.barion.com/");
+        operation.RelativeUriReturns = new Uri("/payment/start", UriKind.Relative);
 
-        [Fact]
-        public async Task ExecuteAsync_ShouldParseTheResponseCorrectly()
-        {
-            var operation = PrepareValidOperation();
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
-            _httpMessageHandler.HttpResponseMessage.Content = new StringContent(@"{
+        var result = await _barionClient.ExecuteAsync(operation);
+
+        Assert.Equal("https://api.barion.com/payment/start", _httpMessageHandler.HttpRequestMessage.RequestUri.ToString());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldSetOperationSuccessTrue_OnSuccessStatusCode()
+    {
+        var operation = PrepareValidOperation();
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+
+        var result = await _barionClient.ExecuteAsync(operation);
+
+        Assert.True(result.IsOperationSuccessful, "Operation should have been successful.");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldNotReturnNull_EvenIfErrorOccured()
+    {
+        var operation = PrepareValidOperation();
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+        _httpMessageHandler.HttpResponseMessage.StatusCode = HttpStatusCode.InternalServerError;
+
+        var result = await _barionClient.ExecuteAsync<TestOperationResult>(operation);
+
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldSetOperationSuccessFalse_OnErrorStatusCode()
+    {
+        var operation = PrepareValidOperation();
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+        _httpMessageHandler.HttpResponseMessage.StatusCode = HttpStatusCode.BadRequest;
+
+        var result = await _barionClient.ExecuteAsync(operation);
+
+        Assert.False(result.IsOperationSuccessful, "Operation should not have been successful.");
+        Assert.Equal("BadRequest", result.Errors[0].ErrorCode);
+        Assert.Equal("Bad Request", result.Errors[0].Title);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldSetOperationSuccessFalse_OnErrorStatusCode_EvenIfTheErrorsArrayIsEmpty()
+    {
+        var operation = PrepareValidOperation();
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+        _httpMessageHandler.HttpResponseMessage.StatusCode = HttpStatusCode.BadRequest;
+        _httpMessageHandler.HttpResponseMessage.Content = new StringContent("{\"Errors\":[]}");
+
+        var result = await _barionClient.ExecuteAsync(operation);
+
+        Assert.False(result.IsOperationSuccessful, "Operation should not have been successful.");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldSetOperationSuccessFalse_OnErrorsArrayIsNotEmpty()
+    {
+        var operation = PrepareValidOperation();
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+        _httpMessageHandler.HttpResponseMessage.Content = new StringContent("{\"Errors\":[{\"ErrorCode\":\"1\", \"Title\":\"Error title\", \"Description\": \"Error\"}]}");
+
+        var result = await _barionClient.ExecuteAsync(operation);
+
+        Assert.False(result.IsOperationSuccessful, "Operation should not have been successful.");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldParseTheResponseCorrectly()
+    {
+        var operation = PrepareValidOperation();
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+        _httpMessageHandler.HttpResponseMessage.Content = new StringContent(@"{
                 ""IntProperty"": 1,
                 ""DecimalProperty"": 1.23,
                 ""DoubleProperty"": 1.23,
@@ -285,119 +278,118 @@ namespace BarionClientLibrary.Tests
                 ""TimeSpanProtperty"": ""1:00:00:00"",
             }");
 
-            var result = await _barionClient.ExecuteAsync<TestOperationResult>(operation);
+        var result = await _barionClient.ExecuteAsync<TestOperationResult>(operation);
 
-            Assert.Equal(1, result.IntProperty);
-            Assert.Equal((decimal)1.23, result.DecimalProperty, 2);
-            Assert.Equal(1.23, result.DoubleProperty);
-            Assert.Equal(new DateTime(2016, 8, 20, 11, 36, 14, 333), result.DateTimeProperty);
-            Assert.Equal("a nice string", result.StringProperty);
-            Assert.Equal(ConsoleColor.Red, result.EnumProperty);
-            Assert.Equal(new CultureInfo("hu-HU"), result.CultureInfoProperty);
-            Assert.Equal(Guid.Parse("462063d5b915410cae9d3bd423583f0f"), result.GuidProperty);
-            Assert.Equal(TimeSpan.FromDays(1), result.TimeSpanProtperty);
-        }
+        Assert.Equal(1, result.IntProperty);
+        Assert.Equal((decimal)1.23, result.DecimalProperty, 2);
+        Assert.Equal(1.23, result.DoubleProperty);
+        Assert.Equal(new DateTime(2016, 8, 20, 11, 36, 14, 333), result.DateTimeProperty);
+        Assert.Equal("a nice string", result.StringProperty);
+        Assert.Equal(ConsoleColor.Red, result.EnumProperty);
+        Assert.Equal(new CultureInfo("hu-HU"), result.CultureInfoProperty);
+        Assert.Equal(Guid.Parse("462063d5b915410cae9d3bd423583f0f"), result.GuidProperty);
+        Assert.Equal(TimeSpan.FromDays(1), result.TimeSpanProtperty);
+    }
 
-        [Fact]
-        public async Task ExecuteAsync_ShouldSerialize_CultureInfo()
-        {
-            var operation = PrepareValidOperation();
-            operation.TestCultureInfo = new CultureInfo("hu-HU");
-            operation.MethodReturns = HttpMethod.Post;
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+    [Fact]
+    public async Task ExecuteAsync_ShouldSerialize_CultureInfo()
+    {
+        var operation = PrepareValidOperation();
+        operation.TestCultureInfo = new CultureInfo("hu-HU");
+        operation.MethodReturns = HttpMethod.Post;
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
 
-            var result = await _barionClient.ExecuteAsync<TestOperationResult>(operation);
+        var result = await _barionClient.ExecuteAsync<TestOperationResult>(operation);
 
-            Assert.Contains("\"TestCultureInfo\": \"hu-HU\"", _httpMessageHandler.HttpRequestBody);
-        }
+        Assert.Contains("\"TestCultureInfo\": \"hu-HU\"", _httpMessageHandler.HttpRequestBody);
+    }
 
-        [Fact]
-        public async Task ExecuteAsync_ShouldNotAllowNumberAsAnEnum()
-        {
-            var operation = PrepareValidOperation();
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
-            _httpMessageHandler.HttpResponseMessage.Content = new StringContent(@"{
+    [Fact]
+    public async Task ExecuteAsync_ShouldNotAllowNumberAsAnEnum()
+    {
+        var operation = PrepareValidOperation();
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+        _httpMessageHandler.HttpResponseMessage.Content = new StringContent(@"{
                 ""EnumProperty"": 12,
             }");
 
-            await Assert.ThrowsAsync<JsonSerializationException>(async () => await _barionClient.ExecuteAsync<TestOperationResult>(operation));
-        }
+        await Assert.ThrowsAsync<JsonSerializationException>(async () => await _barionClient.ExecuteAsync<TestOperationResult>(operation));
+    }
 
-        [Fact]
-        public async Task BarionClient_ShouldThrowException_IfAlreadyDisposed()
+    [Fact]
+    public async Task BarionClient_ShouldThrowException_IfAlreadyDisposed()
+    {
+        var operation = PrepareValidOperation();
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+
+        _barionClient.Dispose();
+
+        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await _barionClient.ExecuteAsync(operation));
+    }
+
+    [Fact]
+    public void BarionClient_ShouldThrowException_IfBaseUrl_IsRelative()
+    {
+        _barionClientSettings = new BarionSettings
         {
-            var operation = PrepareValidOperation();
-            _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+            BaseUrl = new Uri("/index.html", UriKind.Relative),
+            POSKey = Guid.Empty
+        };
 
-            _barionClient.Dispose();
+        Assert.Throws<ArgumentException>(() => new BarionClient(_barionClientSettings));
+    }
 
-            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await _barionClient.ExecuteAsync(operation));
-        }
+    [Fact]
+    public void BarionClient_ShouldThrowException_IfSettings_IsNull()
+    {
+        Assert.Throws<ArgumentNullException>(() => new BarionClient(null));
+    }
 
-        [Fact]
-        public void BarionClient_ShouldThrowException_IfBaseUrl_IsRelative()
+    [Fact]
+    public void BarionClient_ShouldThrowException_IfBaseUrl_IsNull()
+    {
+        _barionClientSettings = new BarionSettings
         {
-            _barionClientSettings = new BarionSettings
-            {
-                BaseUrl = new Uri("/index.html", UriKind.Relative),
-                POSKey = Guid.Empty
-            };
+            POSKey = Guid.Empty
+        };
 
-            Assert.Throws<ArgumentException>(() => new BarionClient(_barionClientSettings));
-        }
+        Assert.Throws<ArgumentNullException>(() => new BarionClient(_barionClientSettings));
+    }
 
-        [Fact]
-        public void BarionClient_ShouldThrowException_IfSettings_IsNull()
+    [Fact]
+    public void BarionClient_ShouldThrowException_IfHttpClient_IsNull()
+    {
+        _barionClientSettings = new BarionSettings
         {
-            Assert.Throws<ArgumentNullException>(() => new BarionClient(null));
-        }
+            BaseUrl = new Uri("https://api.barion.com"),
+            POSKey = Guid.Empty
+        };
 
-        [Fact]
-        public void BarionClient_ShouldThrowException_IfBaseUrl_IsNull()
+        Assert.Throws<ArgumentNullException>(() => new BarionClient(_barionClientSettings, null));
+    }
+
+    private HttpResponseMessage PrepareValidResponse()
+    {
+        return new HttpResponseMessage
         {
-            _barionClientSettings = new BarionSettings
-            {
-                POSKey = Guid.Empty
-            };
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent("{}"),
+        };
+    }
 
-            Assert.Throws<ArgumentNullException>(() => new BarionClient(_barionClientSettings));
-        }
+    private TestOperation PrepareValidOperation()
+    {
+        var operation = new TestOperation();
 
-        [Fact]
-        public void BarionClient_ShouldThrowException_IfHttpClient_IsNull()
-        {
-            _barionClientSettings = new BarionSettings
-            {
-                BaseUrl = new Uri("https://api.barion.com"),
-                POSKey = Guid.Empty
-            };
+        return PrepareValidOperation(operation);
+    }
 
-            Assert.Throws<ArgumentNullException>(() => new BarionClient(_barionClientSettings, null));
-        }
+    private TestOperation PrepareValidOperation(TestOperation operation)
+    {
+        operation.MethodReturns = HttpMethod.Get;
+        operation.RelativeUriReturns = new Uri("/test", UriKind.Relative);
+        operation.ResultTypeReturns = typeof(TestOperationResult);
 
-        private HttpResponseMessage PrepareValidResponse()
-        {
-            return new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent("{}"),
-            };
-        }
-
-        private TestOperation PrepareValidOperation()
-        {
-            var operation = new TestOperation();
-
-            return PrepareValidOperation(operation);
-        }
-
-        private TestOperation PrepareValidOperation(TestOperation operation)
-        {
-            operation.MethodReturns = HttpMethod.Get;
-            operation.RelativeUriReturns = new Uri("/test", UriKind.Relative);
-            operation.ResultTypeReturns = typeof(TestOperationResult);
-
-            return operation;
-        }
+        return operation;
     }
 }

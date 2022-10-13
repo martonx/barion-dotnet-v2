@@ -1,16 +1,15 @@
-﻿namespace BarionClientLibrary.Operations.Common
+﻿namespace BarionClientLibrary.Operations.Enums;
+
+public enum PaymentStatus
 {
-    public enum PaymentStatus
-    {
-        Prepared = 1,
-        Started,
-        InProgress,
-        Reserved,
-        Canceled,
-        Succeeded,
-        PartiallySucceeded,
-        Failed,
-        Deleted,
-        Expired
-    }
+    Prepared = 1,
+    Started,
+    InProgress,
+    Reserved,
+    Canceled,
+    Succeeded,
+    PartiallySucceeded,
+    Failed,
+    Deleted,
+    Expired
 }

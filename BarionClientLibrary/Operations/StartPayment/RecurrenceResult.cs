@@ -1,10 +1,9 @@
-﻿namespace BarionClientLibrary.Operations.StartPayment
+﻿namespace BarionClientLibrary.Operations.StartPayment;
+
+public enum RecurrenceResult
 {
-    public enum RecurrenceResult
-    {
-        None,
-        Successful,
-        Failed,
-        NotFound,
-    }
+    None,
+    Successful,
+    Failed,
+    NotFound,
 }

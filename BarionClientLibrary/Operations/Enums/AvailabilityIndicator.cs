@@ -1,8 +1,7 @@
-﻿namespace BarionClientLibrary.Operations.Common
+﻿namespace BarionClientLibrary.Operations.Enums;
+
+public enum AvailabilityIndicator
 {
-    public enum AvailabilityIndicator
-    {
-        MerchandiseAvailable = 0,
-        FutureAvailability = 10
-    }
+    MerchandiseAvailable = 0,
+    FutureAvailability = 10
 }

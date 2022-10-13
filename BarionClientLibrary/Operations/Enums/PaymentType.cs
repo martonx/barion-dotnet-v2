@@ -1,8 +1,7 @@
-﻿namespace BarionClientLibrary.Operations.Common
+﻿namespace BarionClientLibrary.Operations.Enums;
+
+public enum PaymentType
 {
-    public enum PaymentType
-    {
-        Immediate,
-        Reservation
-    }
+    Immediate,
+    Reservation
 }

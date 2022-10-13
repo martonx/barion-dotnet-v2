@@ -1,9 +1,8 @@
-﻿namespace BarionClientLibrary.Operations.Common
+﻿namespace BarionClientLibrary.Operations.Common;
+
+public class Error
 {
-    public class Error
-    {
-        public string ErrorCode { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-    }
+    public string ErrorCode { get; set; }
+    public string Title { get; set; }
+    public string Description { get; set; }
 }

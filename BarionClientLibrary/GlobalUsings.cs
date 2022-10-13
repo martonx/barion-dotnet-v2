@@ -1,0 +1,12 @@
+﻿global using System.Net;
+global using System.Globalization;
+global using Newtonsoft.Json;
+global using BarionClientLibrary.Operations;
+global using BarionClientLibrary.RetryPolicies;
+global using System.Net.Sockets;
+global using BarionClientLibrary.Operations.Common;
+global using Newtonsoft.Json.Converters;
+global using System.Text;
+global using System.Reflection;
+global using BarionClientLibrary.Helpers;
+global using BarionClientLibrary.Operations.Enums;

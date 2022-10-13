@@ -1,8 +1,7 @@
-﻿namespace BarionClientLibrary.Operations.Common
+﻿namespace BarionClientLibrary.Operations.Common;
+
+public enum RecurrenceType
 {
-    public enum RecurrenceType
-    {
-        MerchantInitiatedPayment = 0,
-        OneClickPayment = 10
-    }
+    MerchantInitiatedPayment = 0,
+    OneClickPayment = 10
 }

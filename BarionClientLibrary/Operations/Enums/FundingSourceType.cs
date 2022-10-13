@@ -1,10 +1,9 @@
-﻿namespace BarionClientLibrary.Operations.Common
+﻿namespace BarionClientLibrary.Operations.Enums;
+
+public enum FundingSourceType
 {
-    public enum FundingSourceType
-    {
-        All,
-        Balance,
-        Bankcard,
-        BankTransfer
-    }
+    All,
+    Balance,
+    Bankcard,
+    BankTransfer
 }

@@ -1,25 +1,22 @@
-﻿using System;
+﻿namespace BarionClientLibrary;
 
-namespace BarionClientLibrary
+/// <summary>
+/// Barion specific settings.
+/// </summary>
+public class BarionSettings
 {
     /// <summary>
-    /// Barion specific settings.
+    /// The private key of the shop.
     /// </summary>
-    public class BarionSettings
-    {
-        /// <summary>
-        /// The private key of the shop.
-        /// </summary>
-        public Guid POSKey { get; set; }
+    public Guid POSKey { get; set; }
 
-        /// <summary>
-        /// The base address of the Barion API.
-        /// </summary>
-        public Uri BaseUrl { get; set; }
+    /// <summary>
+    /// The base address of the Barion API.
+    /// </summary>
+    public Uri BaseUrl { get; set; }
 
-        /// <summary>
-        /// The email address of the Barion user who will receive the payments.
-        /// </summary>
-        public string Payee { get; set; }
-    }
+    /// <summary>
+    /// The email address of the Barion user who will receive the payments.
+    /// </summary>
+    public string Payee { get; set; }
 }

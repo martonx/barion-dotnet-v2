@@ -1,10 +1,9 @@
-﻿namespace BarionClientLibrary.Operations.Common
+﻿namespace BarionClientLibrary.Operations.Enums;
+
+public enum AccountChangeIndicator
 {
-    public enum AccountChangeIndicator
-    {
-        ChangedDuringThisTransaction = 0,
-        LessThan30Days = 10,
-        Between30And60Days = 20,
-        MoreThan60Days = 30
-    }
+    ChangedDuringThisTransaction = 0,
+    LessThan30Days = 10,
+    Between30And60Days = 20,
+    MoreThan60Days = 30
 }
