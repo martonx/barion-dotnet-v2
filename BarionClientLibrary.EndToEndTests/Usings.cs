@@ -1,1 +1,11 @@
+global using BarionClientLibrary.Operations.Common;
+global using BarionClientLibrary.Operations.Enums;
+global using BarionClientLibrary.Operations.FinishReservation;
+global using BarionClientLibrary.Operations.PaymentState;
+global using BarionClientLibrary.Operations.Refund;
+global using BarionClientLibrary.Operations.StartPayment;
+global using Microsoft.Extensions.Configuration;
+global using OpenQA.Selenium;
+global using OpenQA.Selenium.Chrome;
+global using System.Globalization;
 global using Xunit;
