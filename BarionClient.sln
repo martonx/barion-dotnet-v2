@@ -13,15 +13,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		ReleaseNotes.md = ReleaseNotes.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{18F4E511-9F73-4EC1-94CA-E35E0C29E0F3}"
-	ProjectSection(SolutionItems) = preProject
-		Build\createPackage.ps1 = Build\createPackage.ps1
-		Build\publishPackage.ps1 = Build\publishPackage.ps1
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BarionClientLibrary.Tests", "BarionClientLibrary.Tests\BarionClientLibrary.Tests.csproj", "{9C570EE0-3D94-468A-A6FD-25C2AACBEDF1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BarionClientLibrary", "BarionClientLibrary\BarionClientLibrary.csproj", "{9246274C-FA2C-44AB-9584-6EE06FCC35CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BarionClientLibrary.EndToEndTests", "BarionClientLibrary.EndToEndTests\BarionClientLibrary.EndToEndTests.csproj", "{F1C09E19-1C64-44A5-B096-156AC790E3E3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +33,10 @@ Global
 		{9246274C-FA2C-44AB-9584-6EE06FCC35CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9246274C-FA2C-44AB-9584-6EE06FCC35CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9246274C-FA2C-44AB-9584-6EE06FCC35CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1C09E19-1C64-44A5-B096-156AC790E3E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1C09E19-1C64-44A5-B096-156AC790E3E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1C09E19-1C64-44A5-B096-156AC790E3E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1C09E19-1C64-44A5-B096-156AC790E3E3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
