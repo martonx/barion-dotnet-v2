@@ -1,6 +1,6 @@
 namespace BarionClientLibrary.EndToEndTests;
 
-public class PaymentTests
+public class PaymentTests : IDisposable
 {
     private readonly BarionSettings settings;
     private readonly BarionClient barionClient;
@@ -25,12 +25,50 @@ public class PaymentTests
         driver.Manage().Window.Maximize();
     }
 
+    public void Dispose()
+    {
+        driver.Close();
+        driver.Quit();
+    }
+
     [Fact]
     public void Test1()
     {
         var paymentResult = Operations.StartPayment(barionClient, settings, PaymentType.Immediate);
         driver.Url = paymentResult.GatewayUrl;
+        var cardNumberElement = driver.FindElement(By.Id("CardNumber"));
+        cardNumberElement.SendKeys("444488888888");
+        cardNumberElement.SendKeys(Keys.End);
+        cardNumberElement.SendKeys("5");
+        cardNumberElement.SendKeys(Keys.End);
+        cardNumberElement.SendKeys("5");
+        cardNumberElement.SendKeys(Keys.End);
+        cardNumberElement.SendKeys("5");
+        cardNumberElement.SendKeys(Keys.End);
+        cardNumberElement.SendKeys("9");
+        var cardExpirationElement = driver.FindElement(By.Id("CardExpiration"));
+        cardExpirationElement.SendKeys("1026");
+        var cardCvcElement = driver.FindElement(By.Id("CardCVC"));
+        cardCvcElement.SendKeys("100");
+        var cardHolderNameElement = driver.FindElement(By.Id("CardHolderName"));
+        cardHolderNameElement.SendKeys("Teszt Elek");
+        var emailAddressElement = driver.FindElement(By.Id("EmailAddress"));
+        emailAddressElement.SendKeys("tesztelek@gmail.com");
+        var paymentButtonElement = driver.FindElement(By.Id("StartGuestPayment"));
+        paymentButtonElement.Click();
 
-        Thread.Sleep(2000);
+        bool paymentWasSuccessful;
+        do
+        {
+            Thread.Sleep(500);
+            var successfulPaymentElement = driver.FindElement(By.Id("SuccessfulPayment"));
+            if (successfulPaymentElement.Displayed)
+            {
+                paymentWasSuccessful = true;
+                break;
+            }
+        } while (true);
+
+        Assert.True(paymentWasSuccessful);
     }
 }
