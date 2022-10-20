@@ -305,15 +305,29 @@ public class BarionClientTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldNotAllowNumberAsAnEnum()
+    public async Task ExecuteAsync_ShouldAllowNumberAsAnEnum()
     {
         var operation = PrepareValidOperation();
         _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
         _httpMessageHandler.HttpResponseMessage.Content = new StringContent(@"{
-                ""EnumProperty"": 12,
+                ""EnumProperty"": 12
             }");
 
-        await Assert.ThrowsAsync<JsonSerializationException>(async () => await _barionClient.ExecuteAsync<TestOperationResult>(operation));
+        var testOperationResult = await _barionClient.ExecuteAsync<TestOperationResult>(operation);
+        Assert.Equal(ConsoleColor.Red, testOperationResult.EnumProperty);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldAllowStringAsAnEnum()
+    {
+        var operation = PrepareValidOperation();
+        _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
+        _httpMessageHandler.HttpResponseMessage.Content = new StringContent(@"{
+                ""EnumProperty"": ""Red""
+            }");
+
+        var testOperationResult = await _barionClient.ExecuteAsync<TestOperationResult>(operation);
+        Assert.Equal(ConsoleColor.Red, testOperationResult.EnumProperty);
     }
 
     [Fact]

@@ -12,12 +12,20 @@ public class BarionClient : IDisposable
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(120);
     private static readonly TimeSpan MaxTimeout = TimeSpan.FromMilliseconds(int.MaxValue);
     private static readonly TimeSpan InfiniteTimeout = System.Threading.Timeout.InfiniteTimeSpan;
+    private static readonly JsonSerializerOptions deserializerOptions =
+        new JsonSerializerOptions { Converters = { new JsonStringEnumConverter() } };
+    private static readonly JsonSerializerOptions serializerOptions = new JsonSerializerOptions
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters = { new JsonStringEnumConverter() },
+        WriteIndented = true
+    };
 
     /// <summary>
     /// Initializes a new instance of the BarionClientLibrary.BarionClient class.
     /// </summary>
     /// <param name="settings">Barion specific settings.</param>
-    public BarionClient(BarionSettings settings) : this(settings, new HttpClient()) { }
+    public BarionClient(BarionSettings settings) : this(settings, new HttpClient()) {}
 
     /// <summary>
     /// Initializes a new instance of the BarionClientLibrary.BarionClient class.
@@ -149,7 +157,7 @@ public class BarionClient : IDisposable
 
         var shouldRetry = false;
         uint currentRetryCount = 0;
-        TimeSpan retryInterval = TimeSpan.Zero;
+        var retryInterval = TimeSpan.Zero;
         BarionOperationResult result = null;
 
         do
@@ -189,12 +197,17 @@ public class BarionClient : IDisposable
 
         if (operation.Method == HttpMethod.Post || operation.Method == HttpMethod.Put)
         {
-            var body = JsonConvert.SerializeObject(operation, Formatting.Indented, new JsonSerializerSettings
+            try
             {
-                NullValueHandling = NullValueHandling.Ignore,
-                Converters = new List<JsonConverter> { new StringEnumConverter(), new CultureInfoJsonConverter() }
-            });
-            message.Content = new StringContent(body, Encoding.UTF8, "application/json");
+                //this <object> trick must for serialize properties of derived classes: https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-6-0
+                var body = JsonSerializer.Serialize<object>(operation, serializerOptions);
+                message.Content = new StringContent(body, Encoding.UTF8, "application/json");
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            
         }
 
         return message;
@@ -203,11 +216,7 @@ public class BarionClient : IDisposable
     private async Task<BarionOperationResult> CreateResultFromResponseMessage(HttpResponseMessage responseMessage, BarionOperation operation)
     {
         var response = await responseMessage.Content.ReadAsStringAsync();
-
-        var operationResult = (BarionOperationResult)JsonConvert.DeserializeObject(response, operation.ResultType, new JsonSerializerSettings
-        {
-            Converters = new List<JsonConverter> { new StringEnumConverter { AllowIntegerValues = false }, new CultureInfoJsonConverter() }
-        });
+        var operationResult = JsonSerializer.Deserialize(response, operation.ResultType, deserializerOptions) as BarionOperationResult;
 
         if (operationResult == null)
             return CreateFailedOperationResult(operation.ResultType, "Deserialized result was null");
