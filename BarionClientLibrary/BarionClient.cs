@@ -13,7 +13,7 @@ public class BarionClient : IDisposable
     private static readonly TimeSpan MaxTimeout = TimeSpan.FromMilliseconds(int.MaxValue);
     private static readonly TimeSpan InfiniteTimeout = System.Threading.Timeout.InfiniteTimeSpan;
     private static readonly JsonSerializerOptions deserializerOptions =
-        new JsonSerializerOptions { Converters = { new JsonStringEnumConverter() } };
+        new JsonSerializerOptions { Converters = { new JsonStringEnumConverter(), new CultureInfoJsonConverter() }, AllowTrailingCommas = true };
     private static readonly JsonSerializerOptions serializerOptions = new JsonSerializerOptions
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,

@@ -274,8 +274,8 @@ public class BarionClientTests
                 ""StringProperty"": ""a nice string"",
                 ""EnumProperty"": ""Red"",
                 ""CultureInfoProperty"": ""hu-HU"",
-                ""GuidProperty"": ""462063d5b915410cae9d3bd423583f0f"",
-                ""TimeSpanProtperty"": ""1:00:00:00"",
+                ""GuidProperty"": ""462063d5-b915-410c-ae9d-3bd423583f0f"",
+                ""TimeSpanProtperty"": ""1.00:00:00"",
             }");
 
         var result = await _barionClient.ExecuteAsync<TestOperationResult>(operation);
