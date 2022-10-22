@@ -17,7 +17,7 @@ public class BarionClient : IDisposable
     private static readonly JsonSerializerOptions serializerOptions = new JsonSerializerOptions
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { new JsonStringEnumConverter() },
+        Converters = { new JsonStringEnumConverter(), new TypeJsonConverter(), new CultureInfoJsonConverter() },
         WriteIndented = true
     };
 
@@ -197,17 +197,9 @@ public class BarionClient : IDisposable
 
         if (operation.Method == HttpMethod.Post || operation.Method == HttpMethod.Put)
         {
-            try
-            {
-                //this <object> trick must for serialize properties of derived classes: https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-6-0
-                var body = JsonSerializer.Serialize<object>(operation, serializerOptions);
-                message.Content = new StringContent(body, Encoding.UTF8, "application/json");
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            
+            //this <object> trick must for serialize properties of derived classes: https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-6-0
+            var body = JsonSerializer.Serialize<object>(operation, serializerOptions);
+            message.Content = new StringContent(body, Encoding.UTF8, "application/json");
         }
 
         return message;

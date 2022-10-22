@@ -1,4 +1,5 @@
-﻿global using BarionClientLibrary.Operations;
+﻿global using BarionClientLibrary.Helpers;
+global using BarionClientLibrary.Operations;
 global using BarionClientLibrary.Operations.Common;
 global using BarionClientLibrary.Operations.Enums;
 global using BarionClientLibrary.RetryPolicies;

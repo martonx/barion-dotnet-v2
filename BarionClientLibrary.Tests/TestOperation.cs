@@ -1,21 +1,19 @@
-﻿namespace BarionClientLibrary.Tests;
+﻿using System.Runtime.Serialization;
+
+namespace BarionClientLibrary.Tests;
 
 internal class TestOperation : BarionOperation
 {
     public override HttpMethod Method => MethodReturns;
 
-    [JsonIgnore]
     public HttpMethod MethodReturns { get; set; }
 
     public override Uri RelativeUri => RelativeUriReturns;
 
-    [JsonIgnore]
     public Uri RelativeUriReturns { get; set; }
 
-    [JsonIgnore]
     public override Type ResultType => ResultTypeReturns;
 
-    [JsonIgnore]
     public Type ResultTypeReturns { get; set; }
 
     public CultureInfo TestCultureInfo { get; set; }
