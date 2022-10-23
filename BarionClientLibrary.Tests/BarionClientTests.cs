@@ -129,7 +129,7 @@ public class BarionClientTests
 
         var result = await _barionClient.ExecuteAsync(operation);
 
-        Assert.Equal($"{{\r\n  \"POSKey\": \"{_barionClientSettings.POSKey}\"\r\n}}", _httpMessageHandler.HttpRequestBody);
+        Assert.Contains($"\"POSKey\": \"{_barionClientSettings.POSKey}\"", _httpMessageHandler.HttpRequestBody);
     }
 
     [Fact]
