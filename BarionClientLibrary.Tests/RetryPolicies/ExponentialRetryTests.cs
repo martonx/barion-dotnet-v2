@@ -1,4 +1,6 @@
-﻿namespace BarionClientLibrary.Tests.RetryPolicies;
+﻿using System.Text.Json;
+
+namespace BarionClientLibrary.Tests.RetryPolicies;
 
 public class ExponentialRetryTests
 {
@@ -98,7 +100,7 @@ public class ExponentialRetryTests
     {
         var retry = new ExponentialRetry(default(TimeSpan), 3);
 
-        Assert.False(retry.ShouldRetry(0, new JsonSerializationException(), out _));
+        Assert.False(retry.ShouldRetry(0, new JsonException(), out _));
     }
 
     [Theory]

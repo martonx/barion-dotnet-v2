@@ -14,7 +14,7 @@ public class StartPaymentOperation : BarionOperation
     public bool GuestCheckOut { get; set; }
     public bool InitiateRecurrence { get; set; }
     public string RecurrenceId { get; set; }
-    public FundingSourceType[] FundingSources { get; set; }
+    public FundingSourceType[] FundingSources { get; set; } = new FundingSourceType[] { FundingSourceType.All };
     public string PaymentRequestId { get; set; }
     public string PayerHint { get; set; }
     public string CardHolderNameHint { get; set; }

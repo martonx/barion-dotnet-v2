@@ -11,4 +11,10 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="BarionClientLibrary">
+      <HintPath>..\..\BarionClientLibrary\bin\Debug\net6.0\BarionClientLibrary.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

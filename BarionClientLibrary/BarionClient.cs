@@ -17,38 +17,45 @@ public class BarionClient : IDisposable
     private static readonly JsonSerializerOptions serializerOptions = new JsonSerializerOptions
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { new JsonStringEnumConverter(), new TypeJsonConverter(), new CultureInfoJsonConverter() },
-        WriteIndented = true
+        Converters = { new JsonStringEnumConverter(), new TypeJsonConverter(), new CultureInfoJsonConverter() }
     };
 
     /// <summary>
     /// Initializes a new instance of the BarionClientLibrary.BarionClient class.
     /// </summary>
     /// <param name="settings">Barion specific settings.</param>
-    public BarionClient(BarionSettings settings) : this(settings, new HttpClient()) {}
+    public BarionClient(BarionSettings settings) : this(settings is null
+        ? null
+        : Options.Create(new BarionSettings
+            {
+                BaseUrl = settings.BaseUrl,
+                Payee= settings.Payee,
+                POSKey = settings.POSKey,
+            }), new HttpClient()) {}
 
     /// <summary>
     /// Initializes a new instance of the BarionClientLibrary.BarionClient class.
     /// </summary>
-    /// <param name="settings">Barion specific settings.</param>
+    /// <param name="options">Barion specific settings.</param>
     /// <param name="httpClient">HttpClient instance to use for sending HTTP requests.</param>
-    public BarionClient(BarionSettings settings, HttpClient httpClient)
+    public BarionClient(IOptions<BarionSettings> options, HttpClient httpClient)
     {
         if (httpClient == null)
             throw new ArgumentNullException(nameof(httpClient));
 
         _httpClient = httpClient;
-        
-        if (settings == null)
-            throw new ArgumentNullException(nameof(settings));
 
-        if (settings.BaseUrl == null)
-            throw new ArgumentNullException(nameof(settings.BaseUrl));
+        if (options is null)
+            throw new ArgumentNullException(nameof(_settings));
 
-        if (!settings.BaseUrl.IsAbsoluteUri)
-            throw new ArgumentException($"BaseUrl must be an absolute Uri. Actual value: {settings.BaseUrl}", nameof(settings.BaseUrl));
+        _settings = options.Value;
 
-        _settings = settings;
+        if (_settings.BaseUrl == null)
+            throw new ArgumentNullException(nameof(_settings.BaseUrl));
+
+        if (!_settings.BaseUrl.IsAbsoluteUri)
+            throw new ArgumentException($"BaseUrl must be an absolute Uri. Actual value: {_settings.BaseUrl}", nameof(_settings.BaseUrl));
+
 
         _retryPolicy = new ExponentialRetry();
 

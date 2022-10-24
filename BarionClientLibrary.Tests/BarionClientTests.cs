@@ -5,7 +5,7 @@ public class BarionClientTests
     private readonly BarionClient _barionClient;
     private readonly HttpClient _httpClient;
     private readonly TestHttpMessageHandler _httpMessageHandler;
-    private BarionSettings _barionClientSettings;
+    private IOptions<BarionSettings> _barionClientSettings;
     private readonly TestRetryPolicy _retryPolicy;
 
     public BarionClientTests()
@@ -14,11 +14,11 @@ public class BarionClientTests
         _httpClient = new HttpClient(_httpMessageHandler);
         _retryPolicy = new TestRetryPolicy();
 
-        _barionClientSettings = new BarionSettings
+        _barionClientSettings = Options.Create(new BarionSettings
         {
             BaseUrl = new Uri("https://api.barion.com"),
             POSKey = Guid.NewGuid()
-        };
+        });
         _barionClient = new BarionClient(_barionClientSettings, _httpClient)
         {
             RetryPolicy = _retryPolicy
@@ -129,7 +129,7 @@ public class BarionClientTests
 
         var result = await _barionClient.ExecuteAsync(operation);
 
-        Assert.Contains($"\"POSKey\": \"{_barionClientSettings.POSKey}\"", _httpMessageHandler.HttpRequestBody);
+        Assert.Contains($"\"POSKey\":\"{_barionClientSettings.Value.POSKey}\"", _httpMessageHandler.HttpRequestBody);
     }
 
     [Fact]
@@ -169,7 +169,7 @@ public class BarionClientTests
 
         var result = await _barionClient.ExecuteAsync(operation);
 
-        Assert.Contains("\"Color\": \"Red\"", _httpMessageHandler.HttpRequestBody);
+        Assert.Contains("\"Color\":\"Red\"", _httpMessageHandler.HttpRequestBody);
     }
 
     [Fact]
@@ -191,7 +191,7 @@ public class BarionClientTests
         var operation = PrepareValidOperation();
         _httpMessageHandler.HttpResponseMessage = PrepareValidResponse();
 
-        _barionClientSettings.BaseUrl = new Uri("https://api.barion.com/");
+        _barionClientSettings.Value.BaseUrl = new Uri("https://api.barion.com/");
         operation.RelativeUriReturns = new Uri("/payment/start", UriKind.Relative);
 
         var result = await _barionClient.ExecuteAsync(operation);
@@ -301,7 +301,7 @@ public class BarionClientTests
 
         var result = await _barionClient.ExecuteAsync<TestOperationResult>(operation);
 
-        Assert.Contains("\"TestCultureInfo\": \"hu-HU\"", _httpMessageHandler.HttpRequestBody);
+        Assert.Contains("\"TestCultureInfo\":\"hu-HU\"", _httpMessageHandler.HttpRequestBody);
     }
 
     [Fact]
@@ -344,13 +344,13 @@ public class BarionClientTests
     [Fact]
     public void BarionClient_ShouldThrowException_IfBaseUrl_IsRelative()
     {
-        _barionClientSettings = new BarionSettings
+        var settings = new BarionSettings
         {
             BaseUrl = new Uri("/index.html", UriKind.Relative),
             POSKey = Guid.Empty
         };
 
-        Assert.Throws<ArgumentException>(() => new BarionClient(_barionClientSettings));
+        Assert.Throws<ArgumentException>(() => new BarionClient(settings));
     }
 
     [Fact]
@@ -362,23 +362,17 @@ public class BarionClientTests
     [Fact]
     public void BarionClient_ShouldThrowException_IfBaseUrl_IsNull()
     {
-        _barionClientSettings = new BarionSettings
+        var settings = new BarionSettings
         {
             POSKey = Guid.Empty
         };
 
-        Assert.Throws<ArgumentNullException>(() => new BarionClient(_barionClientSettings));
+        Assert.Throws<ArgumentNullException>(() => new BarionClient(settings));
     }
 
     [Fact]
     public void BarionClient_ShouldThrowException_IfHttpClient_IsNull()
     {
-        _barionClientSettings = new BarionSettings
-        {
-            BaseUrl = new Uri("https://api.barion.com"),
-            POSKey = Guid.Empty
-        };
-
         Assert.Throws<ArgumentNullException>(() => new BarionClient(_barionClientSettings, null));
     }
 

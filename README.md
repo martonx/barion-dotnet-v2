@@ -13,8 +13,7 @@ The Barion .NET library makes it easy to add Barion payment to your .NET applica
 
 ## Prerequisites
 
-- .NET Standard 2.0 or .NET 4.5 and above
-- Newtonsoft.Json
+- .NET 6 and above
 
 ## Release Notes
 

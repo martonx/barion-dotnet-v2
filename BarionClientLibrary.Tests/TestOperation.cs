@@ -12,6 +12,7 @@ internal class TestOperation : BarionOperation
     [JsonIgnore]
     public Uri RelativeUriReturns { get; set; }
 
+    [JsonIgnore]
     public override Type ResultType => ResultTypeReturns;
 
     [JsonIgnore]
