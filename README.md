@@ -63,21 +63,20 @@ using(var barionClient = new BarionClient(barionSettings))
 
 #### Registering as a service in ASP.NET Core
 
-```csharp
-public void ConfigureServices(IServiceCollection services)
-{
-	var barionSettings = new BarionSettings
-	{
-		BaseUrl = new Uri("https://api.test.barion.com/"),
-		POSKey = Guid.Parse("d1bcff3989885d3a98235c1cd768eba2"),
-		Payee = "test@example.com",
-	};
+Add this section to appsettings.json
 
-	services.AddSingleton(barionSettings);
-	services.AddTransient<BarionClient>();
-	services.AddHttpClient<BarionClient>();
-	// ...
+```js
+"Barion": {
+    "BaseUrl": "https://api.test.barion.com/",
+    "POSKey": "00000000000000000000000000000000",
+    "Payee": "user@example.com",
+    "Payer": "user@example.com",
+    "PayerPassword": "P@ssW0rd"
 }
+```
+```csharp
+builder.Services.Configure<BarionSettings>(builder.Configuration.GetSection("Barion"));
+builder.Services.AddHttpClient<BarionClient>();
 ```
 
 The lifetime of the service is controlled by the framework this way so you don't have to manually dispose the object (i.e. you don't have to use the `using` statement).
