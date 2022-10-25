@@ -5,10 +5,10 @@
 /// </summary>
 public class BarionClient : IDisposable
 {
-    private HttpClient _httpClient;
-    private BarionSettings _settings;
-    private IRetryPolicy _retryPolicy;
-    private TimeSpan _timeout;
+    private HttpClient httpClient;
+    private BarionSettings settings;
+    private IRetryPolicy retryPolicy;
+    private TimeSpan timeout;
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(120);
     private static readonly TimeSpan MaxTimeout = TimeSpan.FromMilliseconds(int.MaxValue);
     private static readonly TimeSpan InfiniteTimeout = System.Threading.Timeout.InfiniteTimeSpan;
@@ -40,26 +40,23 @@ public class BarionClient : IDisposable
     /// <param name="httpClient">HttpClient instance to use for sending HTTP requests.</param>
     public BarionClient(IOptions<BarionSettings> options, HttpClient httpClient)
     {
-        if (httpClient == null)
-            throw new ArgumentNullException(nameof(httpClient));
-
-        _httpClient = httpClient;
+        this.httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
 
         if (options is null)
-            throw new ArgumentNullException(nameof(_settings));
+            throw new ArgumentNullException(nameof(settings));
 
-        _settings = options.Value;
+        settings = options.Value;
 
-        if (_settings.BaseUrl == null)
-            throw new ArgumentNullException(nameof(_settings.BaseUrl));
+        if (settings.BaseUrl == null)
+            throw new ArgumentNullException(nameof(settings.BaseUrl));
 
-        if (!_settings.BaseUrl.IsAbsoluteUri)
-            throw new ArgumentException($"BaseUrl must be an absolute Uri. Actual value: {_settings.BaseUrl}", nameof(_settings.BaseUrl));
+        if (!settings.BaseUrl.IsAbsoluteUri)
+            throw new ArgumentException($"BaseUrl must be an absolute Uri. Actual value: {settings.BaseUrl}", nameof(settings.BaseUrl));
 
 
-        _retryPolicy = new ExponentialRetry();
+        retryPolicy = new ExponentialRetry();
 
-        _timeout = DefaultTimeout;
+        timeout = DefaultTimeout;
     }
 
     /// <summary>
@@ -67,17 +64,8 @@ public class BarionClient : IDisposable
     /// </summary>
     public IRetryPolicy RetryPolicy
     {
-        get
-        {
-            return _retryPolicy;
-        }
-        set
-        {
-            if (value == null)
-                throw new ArgumentNullException(nameof(value));
-
-            _retryPolicy = value;
-        }
+        get => retryPolicy;
+        set => retryPolicy = value ?? throw new ArgumentNullException(nameof(value));
     }
 
     /// <summary>
@@ -85,18 +73,13 @@ public class BarionClient : IDisposable
     /// </summary>
     public TimeSpan Timeout
     {
-        get
-        {
-            return _timeout;
-        }
+        get => timeout;
         set
         {
             if (value != InfiniteTimeout && (value <= TimeSpan.Zero || value > MaxTimeout))
-            {
                 throw new ArgumentOutOfRangeException(nameof(value));
-            }
 
-            _timeout = value;
+            timeout = value;
         }
     }
 
@@ -122,7 +105,7 @@ public class BarionClient : IDisposable
     /// <returns>Returns System.Threading.Tasks.Task`1.The task object representing the asynchronous operation.</returns>
     public async Task<BarionOperationResult> ExecuteAsync(BarionOperation operation)
     {
-        return await ExecuteAsync(operation, default(CancellationToken));
+        return await ExecuteAsync(operation, default);
     }
 
     /// <summary>
@@ -152,7 +135,7 @@ public class BarionClient : IDisposable
         CheckDisposed();
         ValidateOperation(operation);
 
-        operation.POSKey = _settings.POSKey;
+        operation.POSKey = settings.POSKey;
 
         return await SendWithRetry(operation, cancellationToken);
     }
@@ -165,7 +148,7 @@ public class BarionClient : IDisposable
         var shouldRetry = false;
         uint currentRetryCount = 0;
         var retryInterval = TimeSpan.Zero;
-        BarionOperationResult result = null;
+        BarionOperationResult? result = null;
 
         do
         {
@@ -173,16 +156,16 @@ public class BarionClient : IDisposable
 
             try
             {
-                var responseMessage = await _httpClient.SendAsync(message, linkedCts.Token);
+                var responseMessage = await httpClient.SendAsync(message, linkedCts.Token);
 
                 result = await CreateResultFromResponseMessage(responseMessage, operation);
 
                 if (!result.IsOperationSuccessful)
-                    shouldRetry = _retryPolicy.CreateInstance().ShouldRetry(currentRetryCount, responseMessage.StatusCode, out retryInterval);
+                    shouldRetry = retryPolicy.CreateInstance().ShouldRetry(currentRetryCount, responseMessage.StatusCode, out retryInterval);
             }
             catch (Exception ex)
             {
-                shouldRetry = _retryPolicy.CreateInstance().ShouldRetry(currentRetryCount, ex, out retryInterval);
+                shouldRetry = retryPolicy.CreateInstance().ShouldRetry(currentRetryCount, ex, out retryInterval);
 
                 if (!shouldRetry)
                     throw;
@@ -200,7 +183,7 @@ public class BarionClient : IDisposable
 
     private HttpRequestMessage PrepareHttpRequestMessage(BarionOperation operation)
     {
-        var message = new HttpRequestMessage(operation.Method, new Uri(_settings.BaseUrl, operation.RelativeUri));
+        var message = new HttpRequestMessage(operation.Method, new Uri(settings.BaseUrl, operation.RelativeUri));
 
         if (operation.Method == HttpMethod.Post || operation.Method == HttpMethod.Put)
         {
@@ -221,18 +204,20 @@ public class BarionClient : IDisposable
             return CreateFailedOperationResult(operation.ResultType, "Deserialized result was null");
 
         if (!responseMessage.IsSuccessStatusCode && operationResult.Errors == null)
-            return CreateFailedOperationResult(operation.ResultType, responseMessage.StatusCode.ToString(), responseMessage.ReasonPhrase, response);
+            return CreateFailedOperationResult(operation.ResultType, responseMessage.StatusCode.ToString(),
+                title: responseMessage.ReasonPhrase, response);
 
-        operationResult.IsOperationSuccessful = responseMessage.IsSuccessStatusCode && (operationResult.Errors == null || !operationResult.Errors.Any());
+        operationResult.IsOperationSuccessful = responseMessage.IsSuccessStatusCode
+            && (operationResult.Errors == null || !operationResult.Errors.Any());
 
         return operationResult;
     }
 
     private void SetTimeout(CancellationTokenSource cancellationTokenSource)
     {
-        if (_timeout != InfiniteTimeout)
+        if (timeout != InfiniteTimeout)
         {
-            cancellationTokenSource.CancelAfter(_timeout);
+            cancellationTokenSource.CancelAfter(timeout);
         }
     }
 
@@ -257,18 +242,13 @@ public class BarionClient : IDisposable
             throw new ArgumentNullException(nameof(operation.Method));
     }
 
-    private BarionOperationResult CreateFailedOperationResult(Type resultType, string errorCode, string title = null, string description = null)
+    private BarionOperationResult CreateFailedOperationResult(Type resultType, string errorCode, string? title = null, string? description = null)
     {
         var result = Activator.CreateInstance(resultType) as BarionOperationResult;
         result.IsOperationSuccessful = false;
         result.Errors = new[] 
         {
-            new Error
-            {
-                ErrorCode = errorCode,
-                Title = title,
-                Description = description
-            }
+            new Error { ErrorCode = errorCode, Title = title, Description = description }
         };
 
         return result;
@@ -276,7 +256,7 @@ public class BarionClient : IDisposable
 
     #region IDisposable members
 
-    private volatile bool _disposed;
+    private volatile bool disposed;
 
     /// <summary>
     /// Releases the unmanaged resources and disposes of the managed resources used by the BarionClient.
@@ -298,14 +278,14 @@ public class BarionClient : IDisposable
     /// <param name="disposing">true to release both managed and unmanaged resources; false to releases only unmanaged resources.</param>
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing && !_disposed)
+        if (disposing && !disposed)
         {
-            _disposed = true;
+            disposed = true;
 
-            if (_httpClient != null)
+            if (httpClient != null)
             {
-                _httpClient.Dispose();
-                _httpClient = null;
+                httpClient.Dispose();
+                httpClient = null;
             }
         }
     }
@@ -314,9 +294,7 @@ public class BarionClient : IDisposable
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
+        if (disposed)
             throw new ObjectDisposedException(GetType().ToString());
-        }
     }
 }

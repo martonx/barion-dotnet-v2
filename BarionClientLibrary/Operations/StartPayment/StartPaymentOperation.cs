@@ -8,17 +8,17 @@
 /// </remarks>
 public class StartPaymentOperation : BarionOperation
 {
-    public PaymentType PaymentType { get; set; }
+    public PaymentType PaymentType { get; set; } = PaymentType.Immediate;
     public TimeSpan? ReservationPeriod { get; set; }
     public TimeSpan? PaymentWindow { get; set; }
-    public bool GuestCheckOut { get; set; }
+    public bool GuestCheckOut { get; set; } = true;
     public bool InitiateRecurrence { get; set; }
     public string RecurrenceId { get; set; }
     public FundingSourceType[] FundingSources { get; set; } = new FundingSourceType[] { FundingSourceType.All };
     public string PaymentRequestId { get; set; }
     public string PayerHint { get; set; }
     public string CardHolderNameHint { get; set; }
-    public RecurrenceType? RecurrenceType { get; set; }
+    public RecurrenceType? RecurrenceType { get; set; } = Common.RecurrenceType.OneClickPayment;
     public string RedirectUrl { get; set; }
     public string CallbackUrl { get; set; }
     public PaymentTransaction[] Transactions { get; set; }

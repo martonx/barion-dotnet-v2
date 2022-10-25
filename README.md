@@ -1,5 +1,8 @@
 # Barion .NET
 
+Barion .Net v2 library originally forked from: [Barion .Net](https://github.com/szelpe/barion-dotnet) what is abandoned.
+v2 means not just forked, but modernized, made easier to use, and removed old dependencies like NewtonSoft.Json.
+
 The Barion .NET library makes it easy to add Barion payment to your .NET application. It is built upon [Barion's Web API](https://doksi.barion.com/).
 
 [![Build status](https://ci.appveyor.com/api/projects/status/ixe1udvb57sbh0hv/branch/master?svg=true)](https://ci.appveyor.com/project/szelpe/barion-dotnet/branch/master)
@@ -144,6 +147,6 @@ After this you can use your own operation class the same way as the built in one
 
 ## Contribute
 
-You're welcome to contribute. To build the source code you'll need **Visual Studio 2015**.
+You're welcome to contribute. To build the source code you'll need **Visual Studio 2022**.
 
 You can use `createPackage.ps1` to create the NuGet package.
