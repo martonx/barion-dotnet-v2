@@ -13,7 +13,7 @@ public class PaymentTests : IDisposable
 
         settings = new BarionSettings
         {
-            BaseUrl = new Uri(config["Barion:BaseAddress"]),
+            BaseUrl = new Uri(config["Barion:BaseUrl"]),
             POSKey = Guid.Parse(config["Barion:POSKey"]),
             Payee = config["Barion:Payee"]
         };

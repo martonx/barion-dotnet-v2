@@ -5,7 +5,7 @@ You can find a complete sample website for this guide under the Samples folder. 
 ## Setup
 
 - Install the package `BarionClient`
-- It is recommended to add `BarionBaseAddress` and `BarionPOSKey` to the appSettings
+- It is recommended to add `BarionBaseUrl` and `BarionPOSKey` to the appSettings
 - Create a new Controller to handle Barion operations called `BarionController`
 - Create a new action called `StartPayment` for `BarionController`
     - This action will call the StartPayment Barion API

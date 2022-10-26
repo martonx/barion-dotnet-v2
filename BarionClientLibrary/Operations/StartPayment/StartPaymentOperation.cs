@@ -12,7 +12,7 @@ public class StartPaymentOperation : BarionOperation
     public TimeSpan? ReservationPeriod { get; set; }
     public TimeSpan? PaymentWindow { get; set; }
     public bool GuestCheckOut { get; set; } = true;
-    public bool InitiateRecurrence { get; set; }
+    public bool InitiateRecurrence { get; set; } = false;
     public string RecurrenceId { get; set; }
     public FundingSourceType[] FundingSources { get; set; } = new FundingSourceType[] { FundingSourceType.All };
     public string PaymentRequestId { get; set; }
@@ -36,5 +36,7 @@ public class StartPaymentOperation : BarionOperation
 
     public override Uri RelativeUri => new Uri("/v2/Payment/Start", UriKind.Relative);
     public override HttpMethod Method => HttpMethod.Post;
+
+    [JsonIgnore]
     public override Type ResultType => typeof(StartPaymentOperationResult);
 }

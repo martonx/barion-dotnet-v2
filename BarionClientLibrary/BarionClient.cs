@@ -12,12 +12,16 @@ public class BarionClient : IDisposable
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(120);
     private static readonly TimeSpan MaxTimeout = TimeSpan.FromMilliseconds(int.MaxValue);
     private static readonly TimeSpan InfiniteTimeout = System.Threading.Timeout.InfiniteTimeSpan;
-    private static readonly JsonSerializerOptions deserializerOptions =
-        new JsonSerializerOptions { Converters = { new JsonStringEnumConverter(), new CultureInfoJsonConverter() }, AllowTrailingCommas = true };
-    private static readonly JsonSerializerOptions serializerOptions = new JsonSerializerOptions
+    private static readonly JsonSerializerOptions deserializerOptions = new()
+    {
+        Converters = {
+            new JsonStringEnumConverter(), new CultureInfoJsonConverter(), new GuidJsonConverter()
+        }, AllowTrailingCommas = true
+    };
+    private static readonly JsonSerializerOptions serializerOptions = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { new JsonStringEnumConverter(), new TypeJsonConverter(), new CultureInfoJsonConverter() }
+        Converters = { new JsonStringEnumConverter(), new CultureInfoJsonConverter() }
     };
 
     /// <summary>

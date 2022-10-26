@@ -12,5 +12,6 @@ public class GetPaymentStateOperation : BarionOperation
 
     public override Uri RelativeUri => new Uri($"/v2/Payment/GetPaymentState?PaymentId={PaymentId}&POSKey={POSKey}", UriKind.Relative);
     public override HttpMethod Method => HttpMethod.Get;
+    [JsonIgnore]
     public override Type ResultType => typeof(GetPaymentStateOperationResult);
 }
