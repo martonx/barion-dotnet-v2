@@ -38,7 +38,7 @@ After setting the operation properties you can use the `ExecuteAsync` method and
 
 > Note that `BarionClient` implements `IDisposable`, use it [accordingly](https://msdn.microsoft.com/en-us/library/yh598w02.aspx).
 
-[QuickStart guide](https://github.com/szelpe/barion-dotnet/blob/master/QuickStart.md)
+[QuickStart guide](https://github.com/martonx/barion-dotnet-v2/blob/master/QuickStart.md)
 
 ### Example
 
@@ -86,7 +86,7 @@ The lifetime of the service is controlled by the framework this way so you don't
 
 ## Sample website
 
-You can find a complete sample website under the `Samples` directory. Check [BarionController](https://github.com/szelpe/barion-dotnet/blob/master/Samples/SampleWebsite/Controllers/BarionController.cs) for a detailed example on how to use the client.
+You can find a complete sample website under the `Samples` directory. Check [Minimal Web Api example](https://github.com/martonx/barion-dotnet-v2/blob/master/Samples/AspNetCoreApi/Program.cs) for a detailed example on how to use the client.
 
 ## Retry Policies
 
