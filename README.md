@@ -5,7 +5,7 @@ v2 means not just forked, but modernized, made easier to use, and removed old de
 
 The Barion .NET library makes it easy to add Barion payment to your .NET application. It is built upon [Barion's Web API](https://doksi.barion.com/).
 
-[![Build status](https://github.com/martonx/barion-dotnet-v2/actions/workflows/main.yml/badge.svg)
+[Build status](https://github.com/martonx/barion-dotnet-v2/actions/workflows/main.yml/badge.svg)
 
 ## Supported operations
 
