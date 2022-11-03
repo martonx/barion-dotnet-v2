@@ -4,11 +4,12 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	<PackageId>Barion Client v2</PackageId>
-	<Version>1.0.0</Version>
-	<Authors>Lajos Marton</Authors>
-	<Product>Barion .Net SDK v2</Product>
-	<Title>Barion Client v2</Title>
+    <PackageId>BarionClient2</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Lajos Marton</Authors>
+    <Product>Barion .Net SDK v2</Product>
+    <Title>Barion Client v2</Title>
+    <PackageTags>Barion Payment</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
