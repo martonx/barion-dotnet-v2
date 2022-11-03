@@ -44,23 +44,21 @@ After setting the operation properties you can use the `ExecuteAsync` method and
 
 ``` csharp
 var barionSettings = new BarionSettings
-    {
-        BaseUrl = new Uri("https://api.test.barion.com/"),
-        POSKey = Guid.Parse("d1bcff3989885d3a98235c1cd768eba2")
-    };
-
-using(var barionClient = new BarionClient(barionSettings))
 {
-	var startPayment = new StartPaymentOperation();
+	BaseUrl = new Uri("https://api.test.barion.com/"),
+	POSKey = Guid.Parse("d1bcff3989885d3a98235c1cd768eba2")
+};
 
-	// add payment parameters to startPayment
+using var barionClient = new BarionClient(barionSettings);
+var startPayment = new StartPaymentOperation();
 
-	var result = await barionClient.ExecuteAsync<StartPaymentOperationResult>(startPayment);
+// add payment parameters to startPayment
 
-	if(result.IsOperationSuccessful)
-	{
-		// redirect the user to the payment page
-	}
+var result = await barionClient.ExecuteAsync<StartPaymentOperationResult>(startPayment);
+
+if(result.IsOperationSuccessful)
+{
+	// redirect the user to the payment page
 }
 ```
 
