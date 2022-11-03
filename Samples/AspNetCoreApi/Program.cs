@@ -3,9 +3,7 @@ using BarionClientLibrary.Operations.Common;
 using BarionClientLibrary.Operations.Enums;
 using BarionClientLibrary.Operations.PaymentState;
 using BarionClientLibrary.Operations.StartPayment;
-
 using Microsoft.Extensions.Options;
-
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
