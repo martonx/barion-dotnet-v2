@@ -4,10 +4,11 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	<PackageId>barion-client-library-v2</PackageId>
+	<PackageId>Barion Client v2</PackageId>
 	<Version>1.0.0</Version>
 	<Authors>Lajos Marton</Authors>
 	<Product>Barion .Net SDK v2</Product>
+	<Title>Barion Client v2</Title>
   </PropertyGroup>
 
   <ItemGroup>
