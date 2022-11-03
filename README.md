@@ -146,5 +146,3 @@ After this you can use your own operation class the same way as the built in one
 ## Contribute
 
 You're welcome to contribute. To build the source code you'll need **Visual Studio 2022**.
-
-You can use `createPackage.ps1` to create the NuGet package.
