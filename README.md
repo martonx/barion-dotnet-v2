@@ -24,10 +24,13 @@ The Barion .NET library makes it easy to add Barion payment to your .NET applica
 
 ## Installation
 
-The easiest way to install is to use NuGet:
-
+From package manager:
 ```
-Install-Package BarionClient
+Install-Package BarionClient2
+```
+From dotnet CLI:
+```
+dotnet add package BarionClient2
 ```
 
 ## Usage
