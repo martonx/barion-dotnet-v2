@@ -10,6 +10,9 @@
     <Product>Barion .Net SDK v2</Product>
     <Title>Barion Client v2</Title>
     <PackageTags>Barion Payment</PackageTags>
+	<RepositoryType>git</RepositoryType>
+	<RepositoryUrl>https://github.com/martonx/barion-dotnet-v2</RepositoryUrl>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
