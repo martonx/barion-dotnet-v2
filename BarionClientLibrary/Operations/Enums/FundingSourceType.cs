@@ -5,5 +5,7 @@ public enum FundingSourceType
     All,
     Balance,
     Bankcard,
+    GooglePay,
+    ApplePay,
     BankTransfer
 }
