@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BarionClientLibrary.Tests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BarionClientLibrary", "BarionClientLibrary\BarionClientLibrary.csproj", "{9246274C-FA2C-44AB-9584-6EE06FCC35CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BarionClientLibrary.EndToEndTests", "BarionClientLibrary.EndToEndTests\BarionClientLibrary.EndToEndTests.csproj", "{F1C09E19-1C64-44A5-B096-156AC790E3E3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BarionClientLibrary.EndToEndTests", "BarionClientLibrary.EndToEndTests\BarionClientLibrary.EndToEndTests.csproj", "{F1C09E19-1C64-44A5-B096-156AC790E3E3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

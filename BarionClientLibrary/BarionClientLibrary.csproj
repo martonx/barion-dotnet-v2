@@ -5,18 +5,27 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>BarionClient2</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
     <Authors>Lajos Marton</Authors>
     <Product>Barion .Net SDK v2</Product>
     <Title>Barion Client v2</Title>
     <PackageTags>Barion Payment</PackageTags>
 	<RepositoryType>git</RepositoryType>
 	<RepositoryUrl>https://github.com/martonx/barion-dotnet-v2</RepositoryUrl>
+	<PublishRepositoryUrl>true</PublishRepositoryUrl>
+	<EmbedUntrackedSources>true</EmbedUntrackedSources>
+	  
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
+	<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
+	<None Include="..\README.md" Pack="true" PackagePath="\">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</None>
   </ItemGroup>
 
 </Project>
